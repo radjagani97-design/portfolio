@@ -537,7 +537,7 @@
             <button class="slide-prev-btn" onclick="changeSlide(-1)">Prev Slide</button>
             <button class="slide-next-btn" onclick="changeSlide(1)">Next Slide</button>
         </div>
-        <div class="popup-header" role="button" aria-label="Close" onclick="closePopup()">Close / ESC</div>
+        <div class="popup-header" role="button" aria-label="Close" onclick="closePopup()">X</div>
     </div>
 
     <section id="about" class="about">
@@ -593,6 +593,10 @@
         const WELCOME_POPUP_ID = 'welcomePopup';
         const videoStates = {};
 
+        // --- BATCH RENDER ---
+        const PROJECTS_PER_BATCH = 8;
+        let renderedCount = 0;
+
         document.addEventListener('DOMContentLoaded', () => {
             const isDarkMode = localStorage.getItem('darkMode') === 'true';
             if (isDarkMode) {
@@ -602,8 +606,10 @@
                 document.querySelector('.mode-toggle').textContent = 'Dark Mode';
             }
 
-            renderProjects();
+            renderProjectsBatch();
             setupLazyLoading();
+
+            window.addEventListener('scroll', handleScroll);
 
             const welcomePopup = document.getElementById(WELCOME_POPUP_ID);
             const hasVisited = sessionStorage.getItem('hasVisited');
@@ -622,18 +628,36 @@
                     }, 500);
                 };
             }
+
+            // PATCH: Toggle Contact agar langsung ke contact section (bukan hanya scroll)
+            document.getElementById('contactNav').addEventListener('click', function(e) {
+                e.preventDefault();
+                const contactSection = document.getElementById('contact');
+                if (contactSection) {
+                    // Fokus ke section dan scroll ke tengah viewport
+                    contactSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    contactSection.setAttribute('tabindex', '-1');
+                    contactSection.focus();
+                }
+            });
         });
 
-        function renderProjects() {
+        function renderProjectsBatch(untilIndex = null) {
             const gallery = document.querySelector(GALLERY_SELECTOR);
-            projectData.forEach((item, idx) => {
+            let end = Math.min(renderedCount + PROJECTS_PER_BATCH, projectData.length);
+            if (untilIndex !== null && untilIndex + 1 > end) {
+                end = untilIndex + 1;
+            }
+            for (let idx = renderedCount; idx < end; idx++) {
+                const item = projectData[idx];
                 const div = document.createElement('div');
                 div.className = 'project';
                 div.setAttribute('role', 'listitem');
                 div.setAttribute('tabindex', '0');
                 div.setAttribute('aria-label', item.desc);
 
-                const thumbnailUrl = item.slides[0];
+                // PATCH: Gunakan thumbnail jika ada, fallback ke slides[0]
+                let thumbnailUrl = item.thumbnail || item.slides[0];
                 const isVideo = thumbnailUrl.endsWith('.mp4');
 
                 div.onclick = () => openPopup(idx);
@@ -647,21 +671,51 @@
                 // skeleton
                 const skeleton = document.createElement('div');
                 skeleton.className = 'skeleton';
+                skeleton.style.position = 'absolute';
+                skeleton.style.top = 0;
+                skeleton.style.left = 0;
+                skeleton.style.right = 0;
+                skeleton.style.bottom = 0;
+                skeleton.style.width = '100%';
+                skeleton.style.height = '100%';
+                skeleton.style.zIndex = 2;
                 div.appendChild(skeleton);
 
                 let mediaElement;
                 if (isVideo) {
-                    mediaElement = document.createElement('video');
-                    mediaElement.muted = true;
-                    mediaElement.setAttribute('loop', '');
-                    mediaElement.setAttribute('playsinline', '');
-                    mediaElement.setAttribute('preload', 'none');
-                    mediaElement.setAttribute('data-src', thumbnailUrl);
-                    mediaElement.setAttribute('aria-label', `Video thumbnail for ${item.desc}`);
-                    mediaElement.className = 'lazy';
-                    mediaElement.onloadeddata = () => {
-                        if (skeleton.parentNode) skeleton.remove();
-                    };
+                    // PATCH: Untuk video, gunakan gambar thumbnail jika ada, jika tidak tetap video
+                    if (item.thumbnail) {
+                        mediaElement = document.createElement('img');
+                        mediaElement.setAttribute('data-src', item.thumbnail);
+                        mediaElement.setAttribute('alt', `Thumbnail for ${item.desc}`);
+                        mediaElement.setAttribute('loading', 'lazy');
+                        mediaElement.className = 'lazy';
+                        mediaElement.onload = () => {
+                            setTimeout(() => {
+                                if (skeleton.parentNode) skeleton.remove();
+                            }, 100);
+                        };
+                        mediaElement.onerror = () => {
+                            if (skeleton.parentNode) skeleton.remove();
+                        };
+                    } else {
+                        mediaElement = document.createElement('video');
+                        mediaElement.muted = true;
+                        mediaElement.setAttribute('loop', '');
+                        mediaElement.setAttribute('playsinline', '');
+                        mediaElement.setAttribute('preload', 'none');
+                        mediaElement.setAttribute('data-src', thumbnailUrl);
+                        mediaElement.setAttribute('aria-label', `Video thumbnail for ${item.desc}`);
+                        mediaElement.className = 'lazy';
+                        mediaElement.onloadeddata = () => {
+                            setTimeout(() => {
+                                if (skeleton.parentNode) skeleton.remove();
+                            }, 100);
+                        };
+                        mediaElement.onerror = () => {
+                            if (skeleton.parentNode) skeleton.remove();
+                        };
+                    }
                 } else {
                     mediaElement = document.createElement('img');
                     mediaElement.setAttribute('data-src', thumbnailUrl);
@@ -669,9 +723,17 @@
                     mediaElement.setAttribute('loading', 'lazy');
                     mediaElement.className = 'lazy';
                     mediaElement.onload = () => {
+                        setTimeout(() => {
+                            if (skeleton.parentNode) skeleton.remove();
+                        }, 100);
+                    };
+                    mediaElement.onerror = () => {
                         if (skeleton.parentNode) skeleton.remove();
                     };
                 }
+
+                mediaElement.style.position = 'relative';
+                mediaElement.style.zIndex = 1;
 
                 div.appendChild(mediaElement);
 
@@ -680,7 +742,18 @@
                 div.appendChild(p);
 
                 gallery.appendChild(div);
-            });
+            }
+            renderedCount = end;
+            setupLazyLoading();
+        }
+
+        function handleScroll() {
+            const gallery = document.querySelector(GALLERY_SELECTOR);
+            if (window.innerHeight + window.scrollY >= gallery.offsetTop + gallery.offsetHeight - 500) {
+                if (renderedCount < projectData.length) {
+                    renderProjectsBatch();
+                }
+            }
         }
 
         function setupLazyLoading() {
@@ -691,10 +764,10 @@
                         const el = entry.target;
                         const src = el.dataset.src;
                         if (!el.src && src) {
-                            el.src = src;
-                            if (el.tagName === 'VIDEO') {
-                                el.play().catch(e => console.log('Autoplay failed (muted):', e));
-                            }
+                          el.src = src;
+                          if (el.tagName === 'VIDEO') {
+                            el.play().catch(e => console.log('Autoplay failed (muted):', e));
+                          }
                         }
                         observer.unobserve(el);
                     }
@@ -712,7 +785,12 @@
             localStorage.setItem('darkMode', isDarkMode);
         }
 
+        // --- MODIFIKASI openPopup agar render batch jika project belum dirender ---
         function openPopup(index) {
+            // Jika project belum dirender, render batch sampai project itu muncul
+            if (index >= renderedCount) {
+                renderProjectsBatch(index);
+            }
             currentProjectIndex = index;
             currentSlideIndex = 0;
             loadSlide();
@@ -794,61 +872,69 @@
                         mediaElement.currentTime = videoStates[currentSlide];
                     }
 
-                                        mediaElement.onloadeddata = () => {
-                                            // Only play if not already playing
-                                            if (mediaElement.paused) {
-                                                setTimeout(() => {
-                                                    mediaElement.play().catch(e => console.log('Autoplay failed:', e));
-                                                }, 100);
-                                            }
-                                        };
-                                    } else {
-                                        mediaElement = document.createElement('img');
-                                        mediaElement.src = currentSlide;
-                                        mediaElement.alt = project.desc + ' slide ' + (currentSlideIndex + 1);
-                                    }
-                    
-                                    popupContent.appendChild(mediaElement);
-                                    popupContent.style.opacity = '1';
-                                    popupContent.setAttribute('tabindex', '-1');
-                                    popupContent.focus();
-                                }, 200);
-                            }
-                    
-                            function changeSlide(direction) {
-                                const project = projectData[currentProjectIndex];
-                                const slidesLength = project.slides.length;
-                                currentSlideIndex += direction;
-                                if (currentSlideIndex < 0) currentSlideIndex = slidesLength - 1;
-                                if (currentSlideIndex >= slidesLength) currentSlideIndex = 0;
-                                loadSlide();
-                            }
-                    
-                            function previousProject() {
-                                currentProjectIndex = (currentProjectIndex - 1 + projectData.length) % projectData.length;
-                                currentSlideIndex = 0;
-                                loadSlide();
-                            }
-                    
-                            function nextProject() {
-                                currentProjectIndex = (currentProjectIndex + 1) % projectData.length;
-                                currentSlideIndex = 0;
-                                loadSlide();
-                            }
-                    
-                            // Keyboard navigation for popup
-                            document.addEventListener('keydown', function (e) {
-                                const popup = document.getElementById('popup');
-                                if (popup.style.display === 'flex') {
-                                    if (e.key === 'Escape') {
-                                        closePopup();
-                                    } else if (e.key === 'ArrowLeft') {
-                                        changeSlide(-1);
-                                    } else if (e.key === 'ArrowRight') {
-                                        changeSlide(1);
-                                    }
-                                }
-                            });
-                        </script>
-                    </body>
-                    </html>
+                    mediaElement.onloadeddata = () => {
+                        // Only play if not already playing
+                        if (mediaElement.paused) {
+                            setTimeout(() => {
+                                mediaElement.play().catch(e => console.log('Autoplay failed:', e));
+                            }, 100);
+                        }
+                    };
+                } else {
+                    mediaElement = document.createElement('img');
+                    mediaElement.src = currentSlide;
+                    mediaElement.alt = project.desc + ' slide ' + (currentSlideIndex + 1);
+                }
+
+                popupContent.appendChild(mediaElement);
+                popupContent.style.opacity = '1';
+                popupContent.setAttribute('tabindex', '-1');
+                popupContent.focus();
+            }, 200);
+        }
+
+        function changeSlide(direction) {
+            const project = projectData[currentProjectIndex];
+            const slidesLength = project.slides.length;
+            currentSlideIndex += direction;
+            if (currentSlideIndex < 0) currentSlideIndex = slidesLength - 1;
+            if (currentSlideIndex >= slidesLength) currentSlideIndex = 0;
+            loadSlide();
+        }
+
+        function previousProject() {
+            currentProjectIndex = (currentProjectIndex - 1 + projectData.length) % projectData.length;
+            currentSlideIndex = 0;
+            loadSlide();
+        }
+
+        function nextProject() {
+            currentProjectIndex = (currentProjectIndex + 1) % projectData.length;
+            currentSlideIndex = 0;
+            loadSlide();
+        }
+
+        // Keyboard navigation for popup
+        document.addEventListener('keydown', function (e) {
+            const popup = document.getElementById('popup');
+            if (popup.style.display === 'flex') {
+                if (e.key === 'Escape') {
+                    closePopup();
+                } else if (e.key === 'ArrowLeft') {
+                    // Kiri: project sebelumnya
+                    previousProject();
+                } else if (e.key === 'ArrowRight') {
+                    // Kanan: project berikutnya
+                    nextProject();
+                } else if (e.key === 'ArrowUp') {
+                    // Atas: slide sebelumnya (jika ada)
+                    changeSlide(-1);
+                } else if (e.key === 'ArrowDown') {
+                    // Bawah: slide berikutnya (jika ada)
+                    changeSlide(1);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
