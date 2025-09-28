@@ -488,6 +488,25 @@
             color: #666;
         }
 
+        /* Tambahkan di bagian style */
+        .nav-hint {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 8px 8px;
+            border-radius: 8px;
+            font-size: 0.5em;
+            font-weight: 500;
+            z-index: 2200;
+            max-width: 90vw;
+            text-align: center;
+            pointer-events: none;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+
         @media (max-width: 600px) {
             .popup-nav-left,
             .popup-nav-right {
@@ -523,6 +542,7 @@
     </section>
 
     <div class="slide-indicator"></div>
+    <div class="nav-hint" id="navHint" style="display:none;"></div>
 
     <div class="popup" id="popup" role="dialog" aria-modal="true" aria-label="Project Slideshow" onclick="backgroundClose(event)">
         <div class="popup-nav-left" role="button" aria-label="Previous Project" onclick="previousProject()">❮</div>
@@ -780,9 +800,18 @@
             localStorage.setItem('darkMode', isDarkMode);
         }
 
-        // --- MODIFIKASI openPopup agar render batch jika project belum dirender ---
+        function showNavHint(desc) {
+            const navHint = document.getElementById('navHint');
+            navHint.textContent = desc;
+            navHint.style.display = 'block';
+        }
+        function hideNavHint() {
+            const navHint = document.getElementById('navHint');
+            navHint.style.display = 'none';
+        }
+
+        // --- MODIFIKASI openPopup agar nav hint muncul ---
         function openPopup(index) {
-            // Jika project belum dirender, render batch sampai project itu muncul
             if (index >= renderedCount) {
                 renderProjectsBatch(index);
             }
@@ -796,8 +825,26 @@
             // Panah navigasi proyek selalu terlihat
             document.querySelector('.popup-nav-left').style.display = 'flex';
             document.querySelector('.popup-nav-right').style.display = 'flex';
+
+            // Tampilkan nav hint
+            showNavHint(projectData[index].desc);
         }
 
+        // --- MODIFIKASI previousProject & nextProject agar nav hint update ---
+        function previousProject() {
+            currentProjectIndex = (currentProjectIndex - 1 + projectData.length) % projectData.length;
+            currentSlideIndex = 0;
+            loadSlide();
+            showNavHint(projectData[currentProjectIndex].desc);
+        }
+        function nextProject() {
+            currentProjectIndex = (currentProjectIndex + 1) % projectData.length;
+            currentSlideIndex = 0;
+            loadSlide();
+            showNavHint(projectData[currentProjectIndex].desc);
+        }
+
+        // --- Sembunyikan nav hint saat popup ditutup ---
         function closePopup() {
             document.body.classList.remove('no-scroll');
             document.getElementById('popup').style.display = 'none';
@@ -809,11 +856,14 @@
             }
             document.getElementById('popupContent').innerHTML = '';
 
-            // Sembunyikan indikator slide dan tombol slide saat popup tertutup
             document.querySelector('.slide-indicator').style.display = 'none';
             document.querySelector('.popup-buttons').style.display = 'none';
+
+            // Sembunyikan nav hint
+            hideNavHint();
         }
 
+        // PATCH: Tambahkan fungsi untuk close dengan background
         function backgroundClose(e) {
             if (e.target.id === 'popup') closePopup();
         }
@@ -900,18 +950,6 @@
             currentSlideIndex += direction;
             if (currentSlideIndex < 0) currentSlideIndex = slidesLength - 1;
             if (currentSlideIndex >= slidesLength) currentSlideIndex = 0;
-            loadSlide();
-        }
-
-        function previousProject() {
-            currentProjectIndex = (currentProjectIndex - 1 + projectData.length) % projectData.length;
-            currentSlideIndex = 0;
-            loadSlide();
-        }
-
-        function nextProject() {
-            currentProjectIndex = (currentProjectIndex + 1) % projectData.length;
-            currentSlideIndex = 0;
             loadSlide();
         }
 
