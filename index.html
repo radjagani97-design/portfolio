@@ -336,7 +336,7 @@
         /* Panah samping kini untuk navigasi PROYEK */
         .popup-nav-left,
         .popup-nav-right {
-            position: absolute;
+            position: fixed; /* Ubah dari absolute ke fixed */
             top: 50%;
             transform: translateY(-50%);
             font-size: 18px;
@@ -352,12 +352,7 @@
             cursor: pointer;
             user-select: none;
             transition: background 0.3s, transform 0.2s;
-        }
-
-        .popup-nav-left:hover,
-        .popup-nav-right:hover {
-            background: rgba(0, 0, 0, 0.7);
-            transform: translateY(-50%) scale(1.1);
+            z-index: 2100; /* Pastikan lebih tinggi dari .popup dan .popup-content */
         }
 
         .popup-nav-left {
@@ -834,6 +829,17 @@
 
             popupContent.style.opacity = '0';
 
+            // --- PATCH: Prioritaskan pemuatan media popup ---
+            // Pause semua video dan gambar lazy lain di halaman (kecuali yang di popup)
+            document.querySelectorAll('.gallery video').forEach(v => v.pause && v.pause());
+            document.querySelectorAll('.gallery img.lazy').forEach(img => {
+                // Hapus src agar browser tidak lanjut load
+                if (img.src && !img.closest('#popupContent')) img.removeAttribute('src');
+            });
+            document.querySelectorAll('.gallery video.lazy').forEach(vid => {
+                if (vid.src && !vid.closest('#popupContent')) vid.removeAttribute('src');
+            });
+
             // Matikan video yang ada sebelum konten baru dimuat
             const existingVideo = popupContent.querySelector('video');
             if (existingVideo) {
@@ -849,13 +855,9 @@
                 if (slidesLength > 1) {
                     indicator.textContent = `${currentSlideIndex + 1} / ${slidesLength}`;
                     indicator.style.display = 'block';
-
-                    // Tampilkan tombol navigasi slide
                     popupButtons.style.display = 'flex';
                 } else {
                     indicator.style.display = 'none';
-
-                    // Sembunyikan tombol navigasi slide
                     popupButtons.style.display = 'none';
                 }
 
@@ -873,7 +875,6 @@
                     }
 
                     mediaElement.onloadeddata = () => {
-                        // Only play if not already playing
                         if (mediaElement.paused) {
                             setTimeout(() => {
                                 mediaElement.play().catch(e => console.log('Autoplay failed:', e));
