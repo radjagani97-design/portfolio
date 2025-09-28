@@ -6,6 +6,26 @@
     <title>Radja Gani - Portfolio Web</title>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;500;700&display=swap" rel="stylesheet">
     <style>
+        /* --- Theme variables --- */
+        :root{
+            --bg: #fff;
+            --text: #111;
+            --header-bg: #f9f9f9;
+            --muted: #666;
+            --accent: #007BFF;
+            --footer-border: #eee;
+            --footer-text: #888;
+        }
+        body.dark-mode{
+            --bg: #111;
+            --text: #fff;
+            --header-bg: #222;
+            --muted: #ccc;
+            --accent: #007BFF;
+            --footer-border: #333;
+            --footer-text: #666;
+        }
+
         /* --- Reset --- */
         * {
             margin: 0;
@@ -21,15 +41,14 @@
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             font-family: Montserrat;
-            background: #fff;
-            color: #111;
+            background: var(--bg);
+            color: var(--text);
             transition: background 0.3s, color 0.3s;
             padding-top: 60px;
         }
 
         body.dark-mode {
-            background: #111;
-            color: #fff;
+            /* variables control the colors */
         }
 
         /* --- Header --- */
@@ -37,7 +56,7 @@
             position: fixed;
             top: 0;
             width: 100%;
-            background: #f9f9f9;
+            background: var(--header-bg);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -45,10 +64,6 @@
             z-index: 1000;
             transition: background 0.3s;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        body.dark-mode header {
-            background: #222;
         }
 
         nav {
@@ -65,12 +80,12 @@
         }
 
         nav a:hover {
-            color: #007BFF;
-            border-bottom: 2px solid #007BFF;
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
         }
 
         .mode-toggle {
-            background: #007BFF;
+            background: var(--accent);
             color: #fff;
             border: none;
             font-size: 12px;
@@ -99,11 +114,11 @@
 
         .hero p {
             font-size: 0.8em;
-            color: #666;
+            color: var(--muted);
         }
 
         body.dark-mode .hero p {
-            color: #ccc;
+            color: var(--muted);
         }
 
         body.no-scroll {
@@ -312,7 +327,7 @@
             padding: 8px 15px;
             border: none;
             border-radius: 20px;
-            background: #007BFF;
+            background: var(--accent);
             color: #fff;
             cursor: pointer;
             font-weight: 500;
@@ -371,7 +386,7 @@
             font-size: 14px;
             font-weight: 500;
             color: #fff;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.5);
             padding: 5px 10px;
             border-radius: 5px;
             z-index: 2001;
@@ -391,9 +406,10 @@
             transition: opacity 0.5s;
         }
 
+        /* modified to allow fading (display removed here) */
         #welcomePopup.popup-overlay.hidden {
-            display: none;
             opacity: 0;
+            pointer-events: none;
         }
 
         #welcomePopup .popup-content {
@@ -420,7 +436,7 @@
         }
 
         #welcomePopup button {
-            background: #007BFF;
+            background: var(--accent);
             color: #fff;
             border: none;
             padding: 10px 20px;
@@ -464,7 +480,7 @@
 
         .about a,
         .contact a {
-            color: #007BFF;
+            color: var(--accent);
             text-decoration: none;
             font-weight: 500;
         }
@@ -479,13 +495,13 @@
             text-align: center;
             padding: 20px;
             font-size: 0.8em;
-            color: #888;
-            border-top: 1px solid #eee;
+            color: var(--footer-text);
+            border-top: 1px solid var(--footer-border);
         }
 
         body.dark-mode footer {
-            border-top: 1px solid #333;
-            color: #666;
+            border-top: 1px solid var(--footer-border);
+            color: var(--footer-text);
         }
 
         /* Tambahkan di bagian style */
@@ -531,9 +547,10 @@
         <p>Below are several of my works as my own portfolio, thank you!</p>
     </section>
 
-    <div id="welcomePopup" class="popup-overlay">
+    <div id="welcomePopup" class="popup-overlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle" aria-describedby="welcomeDesc">
         <div class="popup-content">
-            <h1>Welcome to My Portfolio!</h1>
+            <h1 id="welcomeTitle">Welcome to My Portfolio!</h1>
+            <p id="welcomeDesc" style="display:none;">Welcome dialog</p>
             <button id="closeWelcomePopup">Get Started</button>
         </div>
     </div>
@@ -541,13 +558,13 @@
     <section class="gallery" role="list" aria-label="Portfolio Gallery">
     </section>
 
-    <div class="slide-indicator"></div>
+    <div class="slide-indicator" aria-live="polite"></div>
     <div class="nav-hint" id="navHint" style="display:none;"></div>
 
     <div class="popup" id="popup" role="dialog" aria-modal="true" aria-label="Project Slideshow" onclick="backgroundClose(event)">
         <div class="popup-nav-left" role="button" aria-label="Previous Project" onclick="previousProject()">❮</div>
         <div class="popup-nav-right" role="button" aria-label="Next Project" onclick="nextProject()">❯</div>
-        <div id="popupContent" class="popup-content"></div>
+        <div id="popupContent" class="popup-content" tabindex="-1"></div>
         <div class="popup-buttons">
             <button class="slide-prev-btn" onclick="changeSlide(-1)">Prev Slide</button>
             <button class="slide-next-btn" onclick="changeSlide(1)">Next Slide</button>
@@ -630,31 +647,49 @@
             const hasVisited = sessionStorage.getItem('hasVisited');
 
             if (hasVisited) {
+                // fully hide (don't show)
                 welcomePopup.classList.add('hidden');
+                welcomePopup.style.display = 'none';
             } else {
                 welcomePopup.style.display = 'flex';
-                document.getElementById('closeWelcomePopup').onclick = () => {
-                    sessionStorage.setItem('hasVisited', 'true');
-                    welcomePopup.style.opacity = '0';
+                // focus the button and trap focus while visible
+                const closeBtn = document.getElementById('closeWelcomePopup');
+                if (closeBtn) {
+                    closeBtn.focus();
+                    trapFocus(welcomePopup);
+                    closeBtn.onclick = () => {
+                        sessionStorage.setItem('hasVisited', 'true');
+                        welcomePopup.classList.add('hidden');
+                        // wait for CSS fade to finish before removing from flow
+                        setTimeout(() => {
+                            welcomePopup.style.display = 'none';
+                            const firstProject = document.querySelector('.project');
+                            if (firstProject) firstProject.focus();
+                        }, 500);
+                    };
+                } else {
+                    // fallback: hide if button missing
                     setTimeout(() => {
+                        welcomePopup.classList.add('hidden');
                         welcomePopup.style.display = 'none';
-                        const firstProject = document.querySelector('.project');
-                        if (firstProject) firstProject.focus();
-                    }, 500);
-                };
+                    }, 1500);
+                }
             }
 
             // PATCH: Toggle Contact agar langsung ke contact section (bukan hanya scroll)
-            document.getElementById('contactNav').addEventListener('click', function(e) {
-                e.preventDefault();
-                const contactSection = document.getElementById('contact');
-                if (contactSection) {
-                    // Fokus ke section dan scroll ke tengah viewport
-                    contactSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    contactSection.setAttribute('tabindex', '-1');
-                    contactSection.focus();
-                }
-            });
+            const contactNav = document.getElementById('contactNav');
+            if (contactNav) {
+                contactNav.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const contactSection = document.getElementById('contact');
+                    if (contactSection) {
+                        // Fokus ke section dan scroll ke tengah viewport
+                        contactSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        contactSection.setAttribute('tabindex', '-1');
+                        contactSection.focus();
+                    }
+                });
+            }
         });
 
         function renderProjectsBatch(untilIndex = null) {
@@ -672,7 +707,7 @@
                 div.setAttribute('aria-label', item.desc);
 
                 // PATCH: Gunakan thumbnail jika ada, fallback ke slides[0]
-                let thumbnailUrl = item.thumbnail || item.slides[0];
+                let thumbnailUrl = item.thumbnail || item.slides[1] || item.slides[0];
                 const isVideo = thumbnailUrl.endsWith('.mp4');
 
                 div.onclick = () => openPopup(idx);
@@ -828,6 +863,10 @@
 
             // Tampilkan nav hint
             showNavHint(projectData[index].desc);
+
+            // trap focus inside popup
+            const popup = document.getElementById('popup');
+            trapFocus(popup);
         }
 
         // --- MODIFIKASI previousProject & nextProject agar nav hint update ---
@@ -951,6 +990,59 @@
             if (currentSlideIndex < 0) currentSlideIndex = slidesLength - 1;
             if (currentSlideIndex >= slidesLength) currentSlideIndex = 0;
             loadSlide();
+        }
+
+        // Focus trap utility
+        function trapFocus(modal) {
+            if (!modal) return;
+            const selectors = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+            let focusable = Array.from(modal.querySelectorAll(selectors)).filter(el => el.offsetParent !== null || el.getAttribute('tabindex') === '0');
+            if (focusable.length === 0) {
+                // create a hidden focusable fallback
+                const fallback = document.createElement('button');
+                fallback.style.position = 'absolute';
+                fallback.style.left = '-9999px';
+                modal.appendChild(fallback);
+                focusable = [fallback];
+            }
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+
+            function keyHandler(e) {
+                if (e.key === 'Tab') {
+                    if (focusable.length === 1) {
+                        e.preventDefault();
+                        first.focus();
+                        return;
+                    }
+                    if (e.shiftKey) {
+                        if (document.activeElement === first) {
+                            e.preventDefault();
+                            last.focus();
+                        }
+                    } else {
+                        if (document.activeElement === last) {
+                            e.preventDefault();
+                            first.focus();
+                        }
+                    }
+                } else if (e.key === 'Escape') {
+                    // close whichever modal is open (welcome or popup)
+                    const welcome = document.getElementById(WELCOME_POPUP_ID);
+                    const popup = document.getElementById('popup');
+                    if (modal === welcome) {
+                        welcome.classList.add('hidden');
+                        setTimeout(()=> { welcome.style.display = 'none'; }, 500);
+                    } else if (modal === popup) {
+                        closePopup();
+                    }
+                }
+            }
+
+            modal.addEventListener('keydown', keyHandler);
+
+            // store handler so it could be removed if needed (not strictly necessary here)
+            modal._keyHandler = keyHandler;
         }
 
         // Keyboard navigation for popup
