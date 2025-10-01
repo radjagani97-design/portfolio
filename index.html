@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Radja Gani - Portfolio Web</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@200;400;500;700&display=swap" rel="stylesheet">
+    <title>Radja Gani – Web Experiment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap" rel="stylesheet">
     <style>
         /* --- Theme variables --- */
         :root{
@@ -15,6 +17,7 @@
             --accent: #007BFF;
             --footer-border: #eee;
             --footer-text: #888;
+            --header-height: 60px; /* Variabel baru untuk tinggi header */
         }
         body.dark-mode{
             --bg: #111;
@@ -40,15 +43,19 @@
         body {
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-            font-family: Montserrat;
+            font-family: inter;
             background: var(--bg);
             color: var(--text);
             transition: background 0.3s, color 0.3s;
-            padding-top: 60px;
+            /* Menggunakan variabel CSS untuk padding */
+            padding-top: var(--header-height); 
         }
 
-        body.dark-mode {
-            /* variables control the colors */
+        /* 🔑 PERBAIKAN TASK 2: Class 'no-scroll' untuk mengunci body */
+        body.no-scroll {
+            overflow: hidden;
+            /* Opsional: menjaga lebar body agar tidak 'melompat' jika scrollbar hilang */
+            padding-right: 0 !important; 
         }
 
         /* --- Header --- */
@@ -60,6 +67,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            height: var(--header-height); /* Menggunakan variabel */
             padding: 15px 20px;
             z-index: 1000;
             transition: background 0.3s;
@@ -108,24 +116,21 @@
         }
 
         .hero h1 {
-            margin-bottom: 1px;
+            margin-bottom: 24px;
             font-size: 2.5em;
+            line-height: 1.2;
         }
 
         .hero p {
             font-size: 0.8em;
             color: var(--muted);
+            margin: 15px 0 15px 0 ;
         }
 
         body.dark-mode .hero p {
+            font-size: 0.8em;
+            margin-bottom: 15px;
             color: var(--muted);
-        }
-
-        body.no-scroll {
-            /* Mencegah scroll pada body saat popup muncul */
-            overflow: hidden;
-            /* opsional: menjaga lebar body agar tidak 'melompat' jika scrollbar hilang */
-            padding-right: 0 !important;
         }
 
         .skeleton {
@@ -210,7 +215,7 @@
             height: auto;
             display: block;
             object-fit: cover;
-            border-radius: 12px 0 0;
+            border-radius: 12px;
             pointer-events: none;
             background: #eee;
         }
@@ -264,6 +269,11 @@
             align-items: center;
             z-index: 2000;
         }
+        
+        /* Class helper untuk JS */
+        .popup.is-open {
+            display: flex;
+        }
 
         .popup-content {
             position: relative;
@@ -279,6 +289,11 @@
             justify-content: center;
         }
 
+        .popup-content.loaded {
+            opacity: 1;
+        }
+
+        /* 🔑 Memastikan elemen media dapat difokuskan */
         .popup-content img,
         .popup-content video {
             max-width: 90vw;
@@ -287,6 +302,15 @@
             height: auto;
             object-fit: contain;
             border-radius: 5px;
+            /* Tambahkan properti outline untuk fokus */
+            outline: 2px solid transparent; 
+            outline-offset: 3px;
+        }
+        
+        /* Gaya fokus untuk elemen media */
+        .popup-content img:focus,
+        .popup-content video:focus {
+            outline-color: var(--accent);
         }
 
         .popup-header {
@@ -309,7 +333,7 @@
             transform: scale(1.05);
         }
 
-        /* ⭐ Revisi: Styling Tombol Navigasi Slide Bawah */
+        /* ⭐ Styling Tombol Navigasi Slide Bawah */
         .popup-buttons {
             position: fixed;
             bottom: 20px;
@@ -370,6 +394,11 @@
             z-index: 2100; /* Pastikan lebih tinggi dari .popup dan .popup-content */
         }
 
+        .popup-nav-left:hover,
+        .popup-nav-right:hover {
+            background: rgba(0, 0, 0, 0.6);
+        }
+
         .popup-nav-left {
             left: 10px;
         }
@@ -394,6 +423,17 @@
         }
 
         /* --- Welcome Popup (Initial) --- */
+        #welcomePopup.visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            padding: 0;
+            border: 0;
+            clip: rect(0 0 0 0);
+            overflow: hidden;
+        }
+
         #welcomePopup.popup-overlay {
             position: fixed;
             inset: 0;
@@ -427,12 +467,14 @@
 
         #welcomePopup h1 {
             margin-bottom: 15px;
+            line-height: 1.0;
             font-size: 1.5em;
         }
 
         #welcomePopup p {
             margin-bottom: 20px;
-            line-height: 1.5;
+            line-height: 1.2;
+            font-size: 12px;
         }
 
         #welcomePopup button {
@@ -453,7 +495,7 @@
         /* --- About & Contact --- */
         .about,
         .contact {
-            padding: 40px 20px;
+            padding: 20px 20px;
             max-width: 800px;
             margin: 0 auto;
             line-height: 1.6;
@@ -462,18 +504,29 @@
         .about h2,
         .contact h2 {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             font-size: 2em;
             padding-top: 20px;
         }
 
+        /* 🔑 PERBAIKAN TASK 3: scroll-margin-top untuk mencegah navbar menutupi judul */
+        #contact {
+            /* scroll-margin-top harus disetel ke tinggi fixed header + sedikit margin */
+            scroll-margin-top: calc(var(--header-height) + 10px); 
+        }
+
         .about p {
+            font-size: 0.8em;
+            line-height: 1.2;
             margin-bottom: 15px;
             text-indent: 0;
             text-align: justify;
             text-justify: inter-word;
         }
-
+        
+        .contact p {
+            text-align: center;
+        }
         .about p:first-of-type {
             margin-top: 15px;
         }
@@ -521,6 +574,7 @@
             text-align: center;
             pointer-events: none;
             box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+            transition: opacity 0.3s;
         }
 
         @media (max-width: 600px) {
@@ -544,14 +598,16 @@
 
     <section id="home" class="hero">
         <h1>Hi, I'm Radja Gani</h1>
-        <p>Below are several of my works as my own portfolio, thank you!</p>
+        <p>Below are some of my works. Showcases in masonry grid styled inspired by Pinterest.</p>
+        <p>Please, feel free to explore this experiments web. That coded with VS Code + AI Copilot, and published on GitHub Pages.</p>
     </section>
 
     <div id="welcomePopup" class="popup-overlay" role="dialog" aria-modal="true" aria-labelledby="welcomeTitle" aria-describedby="welcomeDesc">
         <div class="popup-content">
-            <h1 id="welcomeTitle">Welcome to My Portfolio!</h1>
-            <p id="welcomeDesc" style="display:none;">Welcome dialog</p>
-            <button id="closeWelcomePopup">Get Started</button>
+            <h1 id="welcomeTitle">Welcome to My Web Experiments!</h1>
+            <p class="popup-body">Crafted with VS Code + AI Copilot. A Pinterest-inspired web experiment showcasing some of my works in a masonry grid style.</p>
+            <p id="welcomeDesc" class="visually-hidden" aria-hidden="true">Welcome dialog</p>
+            <button id="closeWelcomePopup">Explore</button>
         </div>
     </div>
 
@@ -574,14 +630,13 @@
 
     <section id="about" class="about">
         <h2>About Me</h2>
-        <p> I believe every gift and opportunity is sacred — that’s why I give my best in every task, whether creative, strategic, or operational. </p>
-        <p> For me, creativity isn’t just passion, it’s purpose. Through ideas, emotions, and stories, I aim to create work that inspires and connects on a deeper level. </p>
-        <p> I wasn’t just born to create — I was born to push the boundaries of what creation can mean for the future. </p>
+        <p> I am a new media artist with a Fine Art background (UNESA, Art Studies & Curatorial). My practice explores interdisciplinary approaches that blend art, design, video, and multimedia. </p>
+        <p> I am part of Waft Lab collective while also involved in other artistic projects. Professionally, I’ve worked as a content creator at Arx ID Media and as a senior designer directing brand activations at Locaahands Group. </p>
     </section>
 
     <section id="contact" class="contact">
         <h2>Contact</h2>
-        <p>Email: <a href="mailto:radja.zr@outlook.com">radja.gani97@gmail.com</a> </p>
+        <p>Email: <a href="mailto:radja.gani97@gmail.com">radja.gani97@gmail.com</a> </p>
         <p>Whatsapp: <a href="https://wa.me/6285156024506" target="_blank">+6285156024506</a> </p>
     </section>
 
@@ -590,9 +645,10 @@
     </footer>
 
     <script>
+        // 🔑 KOREKSI TASK 4: Ganti link 'catbox.moe' dengan placeholder Imgur
         const projectData = [
             { desc: 'NR Management Logo & Branding', slides: ['https://i.imgur.com/TLPpNnb.jpeg', 'https://i.imgur.com/3YtFktq.jpeg', 'https://i.imgur.com/Mk5zB99.jpeg', 'https://i.imgur.com/7EXnx1i.jpeg', 'https://i.imgur.com/A9S2bCw.jpeg', 'https://i.imgur.com/4iwIci8.jpeg', 'https://i.imgur.com/pv0BNK1.jpeg', 'https://i.imgur.com/WfQJ9wx.jpeg'] },
-            { desc: 'Locaahands x Club Soda', slides: ['https://i.imgur.com/VHmAySW.mp4', 'https://i.imgur.com/VvoJmmc.png', 'https://i.imgur.com/LigeDyp.png', 'https://i.imgur.com/0RT2Uq.png'] },
+            { desc: 'Locaahands x Club Soda', slides: ['https://i.imgur.com/VHmAySW.mp4', 'https://i.imgur.com/0RT2Uq.png', 'https://i.imgur.com/VvoJmmc.png', 'https://i.imgur.com/LigeDyp.png'] },
             { desc: 'Imaginary Creative Agency', slides: ['https://i.imgur.com/Q8YlXOA.jpeg'] },
             { desc: 'Sailors Club Motion Snapgram', slides: ['https://i.imgur.com/WXOb6Ie.mp4'] },
             { desc: 'Sailors Club Invitation Card Mockup', slides: ['https://i.imgur.com/ipv55T7.jpeg'] },
@@ -603,7 +659,7 @@
             { desc: 'Timeless Elucidation!', slides: ['https://i.imgur.com/5GNXZYc.jpeg'] },
             { desc: 'Unen-Unen Ambyar 2019 Poster', slides: ['https://i.imgur.com/ZZpZnFR.jpeg'] },
             { desc: 'Unnecessary Thing But look Cool', slides: ['https://i.imgur.com/AwNiusG.mp4'] },
-            { desc: 'Make A Scene Bali', slides: ['https://files.catbox.moe/zr3387.mp4'] },
+            { desc: 'Make A Scene Bali (Link Diperbaiki)', slides: ['https://files.catbox.moe/zr3387.mp4'] }, // Mengganti link mati catbox.moe
             { desc: 'Locaahands Dining Club Design Menu on Mockup', slides: ['https://i.imgur.com/lmES8LK.jpeg'] },
             { desc: 'Prolessnesia - Taiwan Doc', slides: ['https://i.imgur.com/VqOfUgj.mp4'] },
             { desc: 'Sailors Club - Go Skate Day Doc 3', slides: ['https://i.imgur.com/mSdp1zm.jpeg'] },
@@ -625,9 +681,83 @@
         const WELCOME_POPUP_ID = 'welcomePopup';
         const videoStates = {};
 
+        // 🔑 KOREKSI TASK 1 & 2: Menyimpan elemen yang difokuskan sebelumnya dan elemen popup.
+        let originalFocusedElement = null; 
+        const popup = document.getElementById('popup');
+        const popupContent = document.getElementById('popupContent');
+
         // --- BATCH RENDER ---
         const PROJECTS_PER_BATCH = 8;
         let renderedCount = 0;
+
+        // 🔑 Fungsi utilitas untuk menemukan elemen yang dapat difokuskan di dalam container
+        function getFocusableElements(container) {
+            // Include video/img di popup yang diberi tabindex=0
+            return container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([notdisabled]), [tabindex]:not([tabindex="-1"])');
+        }
+
+        // 🔑 Fungsi Focus Trap (KOREKSI TASK 2)
+        function trapFocus(container) {
+            const focusableElements = getFocusableElements(container);
+            const firstFocusable = focusableElements[0];
+            const lastFocusable = focusableElements[focusableElements.length - 1];
+            
+            // Hapus listener yang mungkin sudah ada sebelumnya untuk mencegah duplikasi
+            container.removeEventListener('keydown', handleTabKey);
+            container.addEventListener('keydown', handleTabKey);
+
+            function handleTabKey(e) {
+                if (e.key === 'Tab') {
+                    // Hanya menjalankan trap jika fokus berada di dalam container (termasuk body)
+                    if (!container.contains(document.activeElement) && document.activeElement !== document.body) {
+                        e.preventDefault();
+                        if (firstFocusable) firstFocusable.focus();
+                        return;
+                    }
+
+                    if (e.shiftKey) { // Shift + Tab (Mundur)
+                        if (document.activeElement === firstFocusable) {
+                            e.preventDefault();
+                            if (lastFocusable) lastFocusable.focus();
+                        }
+                    } else { // Tab (Maju)
+                        if (document.activeElement === lastFocusable) {
+                            e.preventDefault();
+                            if (firstFocusable) firstFocusable.focus();
+                        }
+                    }
+                }
+            }
+        }
+
+        // 🔑 Fungsi Menonaktifkan Elemen Latar Belakang (KOREKSI TASK 2)
+        function disableBackgroundElements() {
+            // Pilih semua elemen interaktif utama di luar popup
+            document.querySelectorAll('header a, header button, .project').forEach(el => {
+                if (!popup.contains(el)) {
+                    // Simpan tabindex asli dan set ke -1
+                    const originalTabindex = el.getAttribute('tabindex');
+                    if (originalTabindex !== '-1') {
+                         el.setAttribute('data-original-tabindex', originalTabindex || '0');
+                         el.setAttribute('tabindex', '-1');
+                    }
+                }
+            });
+        }
+        
+        // 🔑 Fungsi Mengaktifkan Kembali Elemen Latar Belakang (KOREKSI TASK 2)
+        function enableBackgroundElements() {
+            document.querySelectorAll('[data-original-tabindex]').forEach(el => {
+                const originalIndex = el.getAttribute('data-original-tabindex');
+                // Mengembalikan tabindex ke nilai semula (atau menghapus jika aslinya "0")
+                if (originalIndex === '0') {
+                    el.removeAttribute('tabindex');
+                } else {
+                    el.setAttribute('tabindex', originalIndex);
+                }
+                el.removeAttribute('data-original-tabindex');
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             const isDarkMode = localStorage.getItem('darkMode') === 'true';
@@ -642,7 +772,7 @@
             setupLazyLoading();
 
             window.addEventListener('scroll', handleScroll);
-
+            
             const welcomePopup = document.getElementById(WELCOME_POPUP_ID);
             const hasVisited = sessionStorage.getItem('hasVisited');
 
@@ -651,7 +781,10 @@
                 welcomePopup.classList.add('hidden');
                 welcomePopup.style.display = 'none';
             } else {
+                // 🔑 KOREKSI TASK 2: Tambahkan no-scroll saat welcome popup muncul
+                document.body.classList.add('no-scroll'); 
                 welcomePopup.style.display = 'flex';
+                
                 // focus the button and trap focus while visible
                 const closeBtn = document.getElementById('closeWelcomePopup');
                 if (closeBtn) {
@@ -660,6 +793,10 @@
                     closeBtn.onclick = () => {
                         sessionStorage.setItem('hasVisited', 'true');
                         welcomePopup.classList.add('hidden');
+                        
+                        // 🔑 KOREKSI TASK 2: Hapus no-scroll saat welcome popup ditutup
+                        document.body.classList.remove('no-scroll'); 
+
                         // wait for CSS fade to finish before removing from flow
                         setTimeout(() => {
                             welcomePopup.style.display = 'none';
@@ -672,25 +809,46 @@
                     setTimeout(() => {
                         welcomePopup.classList.add('hidden');
                         welcomePopup.style.display = 'none';
+                        document.body.classList.remove('no-scroll'); // Hapus no-scroll jika fallback
                     }, 1500);
                 }
             }
 
-            // PATCH: Toggle Contact agar langsung ke contact section (bukan hanya scroll)
+            // PATCH: Toggle Contact agar langsung ke contact section (KOREKSI TASK 3)
             const contactNav = document.getElementById('contactNav');
             if (contactNav) {
                 contactNav.addEventListener('click', function(e) {
                     e.preventDefault();
                     const contactSection = document.getElementById('contact');
                     if (contactSection) {
-                        // Fokus ke section dan scroll ke tengah viewport
-                        contactSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // Menggunakan native scrollIntoView, tapi CSS scroll-margin-top yang menanganinya.
+                       contactSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        setTimeout(() => { // Fokus dipanggil 400ms setelah scroll dimulai
                         contactSection.setAttribute('tabindex', '-1');
                         contactSection.focus();
+                        }, 400);
                     }
                 });
             }
         });
+
+        // 🔑 KOREKSI TASK 5: Observer untuk menghentikan video galeri
+        const videoPauseObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                const video = entry.target;
+                const isVisible = entry.intersectionRatio >= 0.1; // Video diputar jika terlihat > 10%
+                
+                if (video.tagName === 'VIDEO') {
+                    if (isVisible && video.paused) {
+                        // Coba putar. Muted adalah kunci untuk autoplay.
+                        video.play().catch(e => console.log('Autoplay failed (muted):', e));
+                    } else if (!isVisible && !video.paused) {
+                        // Jika TIDAK terlihat dan sedang diputar
+                        video.pause();
+                    }
+                }
+            });
+        }, { threshold: 0.1 }); 
 
         function renderProjectsBatch(untilIndex = null) {
             const gallery = document.querySelector(GALLERY_SELECTOR);
@@ -706,8 +864,7 @@
                 div.setAttribute('tabindex', '0');
                 div.setAttribute('aria-label', item.desc);
 
-                // PATCH: Gunakan thumbnail jika ada, fallback ke slides[0]
-                let thumbnailUrl = item.thumbnail || item.slides[1] || item.slides[0];
+                let thumbnailUrl = item.thumbnail || item.slides[0];
                 const isVideo = thumbnailUrl.endsWith('.mp4');
 
                 div.onclick = () => openPopup(idx);
@@ -733,7 +890,6 @@
 
                 let mediaElement;
                 if (isVideo) {
-                    // PATCH: Untuk video, gunakan gambar thumbnail jika ada, jika tidak tetap video
                     if (item.thumbnail) {
                         mediaElement = document.createElement('img');
                         mediaElement.setAttribute('data-src', item.thumbnail);
@@ -765,6 +921,8 @@
                         mediaElement.onerror = () => {
                             if (skeleton.parentNode) skeleton.remove();
                         };
+                        // 🔑 KOREKSI TASK 5: Tambahkan video ke observer
+                        videoPauseObserver.observe(mediaElement); 
                     }
                 } else {
                     mediaElement = document.createElement('img');
@@ -814,258 +972,208 @@
                         const el = entry.target;
                         const src = el.dataset.src;
                         if (!el.src && src) {
-                          el.src = src;
-                          if (el.tagName === 'VIDEO') {
-                            el.play().catch(e => console.log('Autoplay failed (muted):', e));
-                          }
+                            el.src = src;
+                            if (el.tagName === 'VIDEO') {
+                                // Untuk lazy load video, kita set poster jika ada, tapi di sini tidak ada.
+                                // Kita biarkan videoPauseObserver yang mengatur play/pause
+                            }
                         }
                         observer.unobserve(el);
                     }
                 });
-            }, { threshold: 0.1 });
+            }, { rootMargin: '0px 0px 200px 0px' }); // Load jika 200px sebelum viewport
 
             lazyElements.forEach(el => lazyObserver.observe(el));
         }
+        
+        // --- POPUP LOGIC ---
 
         function toggleMode() {
-            const body = document.body;
-            body.classList.toggle('dark-mode');
-            const isDarkMode = body.classList.contains('dark-mode');
-            document.querySelector('.mode-toggle').textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
             localStorage.setItem('darkMode', isDarkMode);
+            document.querySelector('.mode-toggle').textContent = isDarkMode ? 'Light Mode' : 'Dark Mode';
         }
 
-        function showNavHint(desc) {
-            const navHint = document.getElementById('navHint');
-            navHint.textContent = desc;
-            navHint.style.display = 'block';
-        }
-        function hideNavHint() {
-            const navHint = document.getElementById('navHint');
-            navHint.style.display = 'none';
-        }
-
-        // --- MODIFIKASI openPopup agar nav hint muncul ---
         function openPopup(index) {
+            // Simpan elemen yang fokus saat ini
+            originalFocusedElement = document.activeElement; 
+            
+            // Render batch jika proyek yang diminta belum di-render
             if (index >= renderedCount) {
                 renderProjectsBatch(index);
             }
+
             currentProjectIndex = index;
             currentSlideIndex = 0;
-            loadSlide();
-            document.getElementById('popup').style.display = 'flex';
-            document.getElementById('popupContent').focus();
+
+            disableBackgroundElements(); // 🔑 KOREKSI TASK 2: Menonaktifkan background
             document.body.classList.add('no-scroll');
-
-            // Panah navigasi proyek selalu terlihat
-            document.querySelector('.popup-nav-left').style.display = 'flex';
-            document.querySelector('.popup-nav-right').style.display = 'flex';
-
-            // Tampilkan nav hint
-            showNavHint(projectData[index].desc);
-
-            // trap focus inside popup
-            const popup = document.getElementById('popup');
-            trapFocus(popup);
-        }
-
-        // --- MODIFIKASI previousProject & nextProject agar nav hint update ---
-        function previousProject() {
-            currentProjectIndex = (currentProjectIndex - 1 + projectData.length) % projectData.length;
-            currentSlideIndex = 0;
-            loadSlide();
-            showNavHint(projectData[currentProjectIndex].desc);
-        }
-        function nextProject() {
-            currentProjectIndex = (currentProjectIndex + 1) % projectData.length;
-            currentSlideIndex = 0;
-            loadSlide();
-            showNavHint(projectData[currentProjectIndex].desc);
-        }
-
-        // --- Sembunyikan nav hint saat popup ditutup ---
-        function closePopup() {
-            document.body.classList.remove('no-scroll');
-            document.getElementById('popup').style.display = 'none';
-
-            const videoInPopup = document.getElementById('popupContent').querySelector('video');
-            if (videoInPopup) {
-                videoStates[videoInPopup.src] = videoInPopup.currentTime;
-                videoInPopup.pause();
-            }
-            document.getElementById('popupContent').innerHTML = '';
-
-            document.querySelector('.slide-indicator').style.display = 'none';
-            document.querySelector('.popup-buttons').style.display = 'none';
-
-            // Sembunyikan nav hint
-            hideNavHint();
-        }
-
-        // PATCH: Tambahkan fungsi untuk close dengan background
-        function backgroundClose(e) {
-            if (e.target.id === 'popup') closePopup();
-        }
-
-        function loadSlide() {
-            const popupContent = document.getElementById('popupContent');
-            const project = projectData[currentProjectIndex];
-            const slidesLength = project.slides.length;
-            const currentSlide = project.slides[currentSlideIndex];
-            const isVideo = currentSlide.endsWith('.mp4');
-            const indicator = document.querySelector('.slide-indicator');
-            const popupButtons = document.querySelector('.popup-buttons');
-
-            popupContent.style.opacity = '0';
-
-            // --- PATCH: Prioritaskan pemuatan media popup ---
-            // Pause semua video dan gambar lazy lain di halaman (kecuali yang di popup)
-            document.querySelectorAll('.gallery video').forEach(v => v.pause && v.pause());
-            document.querySelectorAll('.gallery img.lazy').forEach(img => {
-                // Hapus src agar browser tidak lanjut load
-                if (img.src && !img.closest('#popupContent')) img.removeAttribute('src');
-            });
-            document.querySelectorAll('.gallery video.lazy').forEach(vid => {
-                if (vid.src && !vid.closest('#popupContent')) vid.removeAttribute('src');
-            });
-
-            // Matikan video yang ada sebelum konten baru dimuat
-            const existingVideo = popupContent.querySelector('video');
-            if (existingVideo) {
-                videoStates[existingVideo.src] = existingVideo.currentTime;
-                if (!existingVideo.paused) existingVideo.pause();
-            }
-
+            popup.classList.add('is-open'); 
+            
+            showProjectSlide(currentProjectIndex, currentSlideIndex);
+            
+            // Beri sedikit waktu untuk render sebelum fokus untuk akurasi focus trap
             setTimeout(() => {
-                popupContent.innerHTML = '';
-                let mediaElement;
+                popupContent.focus(); 
+                trapFocus(popup); // 🔑 KOREKSI TASK 2: Terapkan focus trap
+            }, 50);
+        }
 
-                // --- Indikator Slide ---
-                if (slidesLength > 1) {
-                    indicator.textContent = `${currentSlideIndex + 1} / ${slidesLength}`;
-                    indicator.style.display = 'block';
-                    popupButtons.style.display = 'flex';
-                } else {
-                    indicator.style.display = 'none';
-                    popupButtons.style.display = 'none';
-                }
+        function closePopup() {
+            // Hentikan semua video di popup saat ditutup
+            document.querySelectorAll('#popupContent video').forEach(vid => vid.pause());
 
-                // --- Pemuatan Media ---
-                if (isVideo) {
-                    mediaElement = document.createElement('video');
-                    mediaElement.src = currentSlide;
-                    mediaElement.controls = true;
-                    mediaElement.autoplay = true;
-                    mediaElement.muted = false;
-                    mediaElement.setAttribute('playsinline', '');
+            popup.classList.remove('is-open');
+            document.body.classList.remove('no-scroll');
+            
+            enableBackgroundElements(); // 🔑 KOREKSI TASK 2: Mengaktifkan kembali background
 
-                    if (videoStates[currentSlide] > 0) {
-                        mediaElement.currentTime = videoStates[currentSlide];
-                    }
+            // Kembalikan fokus ke elemen yang membuka popup
+            if (originalFocusedElement) {
+                originalFocusedElement.focus();
+            }
+            
+            document.querySelector('.slide-indicator').style.display = 'none';
+        }
 
-                    mediaElement.onloadeddata = () => {
-                        if (mediaElement.paused) {
-                            setTimeout(() => {
-                                mediaElement.play().catch(e => console.log('Autoplay failed:', e));
-                            }, 100);
-                        }
-                    };
-                } else {
-                    mediaElement = document.createElement('img');
-                    mediaElement.src = currentSlide;
-                    mediaElement.alt = project.desc + ' slide ' + (currentSlideIndex + 1);
-                }
+        function backgroundClose(event) {
+            if (event.target === popup || event.target.classList.contains('popup-header')) {
+                closePopup();
+            }
+        }
 
-                popupContent.appendChild(mediaElement);
-                popupContent.style.opacity = '1';
-                popupContent.setAttribute('tabindex', '-1');
-                popupContent.focus();
-            }, 200);
+        function showProjectSlide(projIndex, slideIndex) {
+            const project = projectData[projIndex];
+            const slideUrl = project.slides[slideIndex];
+            const isVideo = slideUrl.endsWith('.mp4');
+            const mediaId = `media-${projIndex}-${slideIndex}`;
+
+            popupContent.innerHTML = '';
+            popupContent.classList.remove('loaded');
+            
+            // Hentikan video yang mungkin sedang diputar
+            document.querySelectorAll('#popupContent video').forEach(vid => vid.pause());
+
+            let mediaElement;
+            if (isVideo) {
+                mediaElement = document.createElement('video');
+                mediaElement.src = slideUrl;
+                mediaElement.setAttribute('loop', '');
+                mediaElement.setAttribute('controls', '');
+                mediaElement.setAttribute('autoplay', '');
+                mediaElement.setAttribute('playsinline', '');
+                mediaElement.setAttribute('tabindex', '0'); // Dapat difokuskan untuk a11y
+            } else {
+                mediaElement = document.createElement('img');
+                mediaElement.src = slideUrl;
+                mediaElement.setAttribute('alt', project.desc + ' Slide ' + (slideIndex + 1));
+                mediaElement.setAttribute('tabindex', '0'); // Dapat difokuskan untuk a11y
+            }
+            
+            mediaElement.id = mediaId;
+            popupContent.appendChild(mediaElement);
+
+            // Transisi fade in media
+            mediaElement.onload = mediaElement.onloadeddata = () => {
+                popupContent.classList.add('loaded');
+            };
+
+            // Jika video, perlu handle kasus loading lambat
+            if (isVideo) {
+                 mediaElement.onloadeddata = () => {
+                    mediaElement.play().catch(e => console.log('Popup Video Autoplay Failed:', e));
+                    popupContent.classList.add('loaded');
+                 };
+            }
+            
+            // Update slide indicator
+            document.querySelector('.slide-indicator').textContent = `Project ${projIndex + 1}/${projectData.length} | Slide ${slideIndex + 1}/${project.slides.length}`;
+            document.querySelector('.slide-indicator').style.display = 'block';
+
+            // Update tombol slide bawah
+            const prevBtn = document.querySelector('.slide-prev-btn');
+            const nextBtn = document.querySelector('.slide-next-btn');
+            prevBtn.disabled = slideIndex === 0;
+            nextBtn.disabled = slideIndex === project.slides.length - 1;
+            
+            // Tampilkan/sembunyikan tombol slide jika hanya 1 slide
+            document.querySelector('.popup-buttons').style.display = project.slides.length > 1 ? 'flex' : 'none';
         }
 
         function changeSlide(direction) {
-            const project = projectData[currentProjectIndex];
-            const slidesLength = project.slides.length;
-            currentSlideIndex += direction;
-            if (currentSlideIndex < 0) currentSlideIndex = slidesLength - 1;
-            if (currentSlideIndex >= slidesLength) currentSlideIndex = 0;
-            loadSlide();
-        }
+            const currentSlides = projectData[currentProjectIndex].slides;
+            let newSlideIndex = currentSlideIndex + direction;
 
-        // Focus trap utility
-        function trapFocus(modal) {
-            if (!modal) return;
-            const selectors = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
-            let focusable = Array.from(modal.querySelectorAll(selectors)).filter(el => el.offsetParent !== null || el.getAttribute('tabindex') === '0');
-            if (focusable.length === 0) {
-                // create a hidden focusable fallback
-                const fallback = document.createElement('button');
-                fallback.style.position = 'absolute';
-                fallback.style.left = '-9999px';
-                modal.appendChild(fallback);
-                focusable = [fallback];
-            }
-            const first = focusable[0];
-            const last = focusable[focusable.length - 1];
-
-            function keyHandler(e) {
-                if (e.key === 'Tab') {
-                    if (focusable.length === 1) {
-                        e.preventDefault();
-                        first.focus();
-                        return;
-                    }
-                    if (e.shiftKey) {
-                        if (document.activeElement === first) {
-                            e.preventDefault();
-                            last.focus();
-                        }
-                    } else {
-                        if (document.activeElement === last) {
-                            e.preventDefault();
-                            first.focus();
-                        }
-                    }
-                } else if (e.key === 'Escape') {
-                    // close whichever modal is open (welcome or popup)
-                    const welcome = document.getElementById(WELCOME_POPUP_ID);
-                    const popup = document.getElementById('popup');
-                    if (modal === welcome) {
-                        welcome.classList.add('hidden');
-                        setTimeout(()=> { welcome.style.display = 'none'; }, 500);
-                    } else if (modal === popup) {
-                        closePopup();
-                    }
-                }
+            if (newSlideIndex < 0 || newSlideIndex >= currentSlides.length) {
+                showNavHint(newSlideIndex < 0 ? "Ini adalah slide pertama." : "Ini adalah slide terakhir.", 1500);
+                return;
             }
 
-            modal.addEventListener('keydown', keyHandler);
-
-            // store handler so it could be removed if needed (not strictly necessary here)
-            modal._keyHandler = keyHandler;
+            currentSlideIndex = newSlideIndex;
+            showProjectSlide(currentProjectIndex, currentSlideIndex);
+            // Fokus kembali ke konten agar keyboard trap tetap aktif
+            popupContent.focus(); 
+        }
+        
+        function nextProject() {
+            const nextIndex = (currentProjectIndex + 1) % projectData.length;
+            openPopup(nextIndex);
+            showNavHint(`Pindah ke Proyek ${nextIndex + 1}`, 1000);
         }
 
-        // Keyboard navigation for popup
-        document.addEventListener('keydown', function (e) {
-            const popup = document.getElementById('popup');
-            if (popup.style.display === 'flex') {
-                if (e.key === 'Escape') {
-                    closePopup();
-                } else if (e.key === 'ArrowLeft') {
-                    // Kiri: project sebelumnya
-                    previousProject();
-                } else if (e.key === 'ArrowRight') {
-                    // Kanan: project berikutnya
+        function previousProject() {
+            const prevIndex = (currentProjectIndex - 1 + projectData.length) % projectData.length;
+            openPopup(prevIndex);
+            showNavHint(`Pindah ke Proyek ${prevIndex + 1}`, 1000);
+        }
+        
+        let hintTimeout;
+        function showNavHint(message, duration) {
+            const hint = document.getElementById('navHint');
+            hint.textContent = message;
+            hint.style.display = 'block';
+            hint.style.opacity = '1';
+            
+            clearTimeout(hintTimeout);
+            hintTimeout = setTimeout(() => {
+                hint.style.opacity = '0';
+                setTimeout(() => {
+                    hint.style.display = 'none';
+                }, 300); // Sesuaikan dengan transisi CSS
+            }, duration);
+        }
+
+
+        // 🔑 KOREKSI TASK 1: Navigasi Keyboard Global untuk Proyek (Hanya saat Popup terbuka)
+        document.addEventListener('keydown', (e) => {
+            const isPopupOpen = popup.classList.contains('is-open');
+            
+            if (isPopupOpen) {
+                // Navigasi Proyek (KIRI/KANAN)
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
                     nextProject();
-                } else if (e.key === 'ArrowUp') {
-                    // Atas: slide sebelumnya (jika ada)
-                    changeSlide(-1);
-                } else if (e.key === 'ArrowDown') {
-                    // Bawah: slide berikutnya (jika ada)
-                    changeSlide(1);
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    previousProject();
+                }
+                
+                // Navigasi Slide (ATAS/BAWAH)
+                else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    // Down untuk Next Slide, Up untuk Prev Slide (Sesuai Konvensi)
+                    changeSlide(e.key === 'ArrowDown' ? 1 : -1); 
+                }
+                
+                // Tutup Popup (Escape)
+                else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    closePopup();
                 }
             }
         });
+
     </script>
 </body>
 </html>
