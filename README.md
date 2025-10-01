@@ -15,7 +15,7 @@ It can definitely be developed further to be **more dynamic and efficient**.
 Feel free to fork, modify, and experiment with it for your own portfolio or projects.  
 
 ## Live Demo
-[https://radjagani97.github.io/Portfolio](https://radjagani97.github.io/)
+[https://radjagani97.github.io/portfolio]
 
 ---
 © 2025 Radja Gani
